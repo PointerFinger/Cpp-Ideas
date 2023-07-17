@@ -1,41 +1,53 @@
-﻿#include <iostream>
-#include <chrono>
-#include <thread>
+#include <iostream>
+#include <ctime>
 #include <random>
-#include <string>
+#include <future>
 
 int main() {
-	using namespace std:: this_thread;
-	using namespace std:: chrono_literals;
-	int time=1;
-	int d;
-	
-	std::cout << "You are in the Wild West and about to do a duel. \n";
-	sleep_for(3s);
-	std::cout << "After three seconds you need to press D to be faster than your opponent. \n";
-	sleep_for(3s);
-	std::cout << "It's High Noon. \n";
-	
-	while(time <= 3) {
-		std::cout << time;
-		std::cout << "\n";
-		sleep_for(3s);
-		time++;
-	}
-	sleep_for(1s);
-	
-	std::cout << "DRAW! \n";
-		
-	std::mt19937_64 draw{std::random_device{}()};
-    std::uniform_int_distribution<> dist{1, 500};
-    sleep_for(std::chrono::milliseconds{dist(draw)});
+    time_t start, end;
+    double timeTaken;
+
+    using namespace std;
     
-    if(std::cin >> d) {
-    	std::cout << "You Win!";
+    // Generate a random wait time between 1 and 5 seconds
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dis(1, 5);
+    int waitTime = dis(gen);
+
+    // Create a future object to handle the input
+    future<string> futureInput = async(launch::async, []() {
+        string input;
+        cin >> input;
+        return input;
+    });
+
+    // Wait for the input for the specified time
+    future_status status = futureInput.wait_for(chrono::seconds(waitTime));
+
+    // Check if there is no input after the specified time
+    if (status == future_status::timeout) {
+        cout << "stop" << endl;
+    } else {
+        // Retrieve and print the input
+        string input = futureInput.get();
+        cout << "Input received: " << input << endl;
     }
-    else {
-    	std::cout << "You Lost...";
-    }
-      
-	return 0;
+    
+    cout << "Click as fast as you can!" << endl;
+    cout << "Press Enter to start...";
+    cin.get();
+
+    start = time(0);
+
+    cout << "Click now!" << endl;
+    cin.get();
+
+    end = time(0);
+
+    timeTaken = difftime(end, start);
+
+    cout << "Time taken: " << timeTaken << " seconds" << endl;
+
+    return 0;
 }
